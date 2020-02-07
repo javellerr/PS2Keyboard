@@ -100,6 +100,7 @@ static uint8_t CharBuffer = 0;
 static uint8_t UTF8next = 0;
 static const PS2Keymap_t *keymap = &PS2Keymap_US;
 
+// http://www-ug.eecg.toronto.edu/msl/nios_devices/datasheets/PS2%20Protocol.htm
 void ps2interrupt(void)
 {
   static uint8_t bitcount = 0;
