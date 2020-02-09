@@ -10,8 +10,11 @@
 #define KEYBOARD_IRQ_NUM 0
 #define BUFFER_SIZE 45
 
+#define DBG
+
 static volatile uint8_t buffer[BUFFER_SIZE];
 static volatile uint8_t head = 0, tail = 0;
+SoftwareSerial blue(4, 5); // Rx,Tx
 
 void ps2interrupt(void)
 {
@@ -36,7 +39,7 @@ void ps2interrupt(void)
   if (bitcount == 11) {
     uint8_t i = head + 1;
     if (i >= BUFFER_SIZE) i = 0;
-    if (i != tail) { 
+    if (i != tail) {
       buffer[i] = incoming;
       head = i;
     }
@@ -68,7 +71,75 @@ bool PS2Keyboard_available() {
   return (tail != head);
 }
 
-SoftwareSerial blue(4, 5); // Rx,Tx
+void process_and_get_scancode(uint8_t c)
+{
+  static int8_t flag_release = 0;
+  static int8_t flag_ext = 0;
+
+  if (flag_release)
+  {
+    flag_release = 0;
+    send_raw_report(0x00, 0x00);
+    return;
+  }
+  else if (flag_ext)
+  {
+    flag_ext = 0;
+    if (c == 0x1F)
+    {
+      send_raw_report(0x08, 0x00);
+    }
+    return;
+  }
+  else if (c == 0x1C)
+  {
+    send_raw_report(0x00, 0x04);
+    return;
+  }
+  else if (c == 0x5A)
+  {
+    send_raw_report(0x00, 0x28);
+    return;
+  }
+  else if (c == 0xE0)
+  {
+    flag_ext = 1;
+    return;
+  }
+  else if (c == 0xF0)
+  {
+    flag_release = 1;
+    return;
+  }
+}
+
+#ifdef DBG
+static char logbuf[64];
+static int logcnt = 0;
+#endif
+
+void send_raw_report(uint8_t modifier, uint8_t scancode)
+{
+  static uint8_t sendbuf[6] =
+  {
+    0xFD, // start byte
+    0x04, // length
+    0x01, // descriptor
+    0x00, // modifier
+    0x00, // 0x00
+    0x00 // scan code 1
+  };
+
+#ifdef DBG
+  sprintf(logbuf, "[%d] send_raw_report : (%02X)\n", logcnt++, scancode);
+  Serial.print(logbuf);
+#endif
+
+  sendbuf[3] = modifier;
+  sendbuf[5] = scancode;
+
+  blue.write(sendbuf, sizeof(sendbuf));
+}
 
 void setup()
 {
@@ -78,76 +149,18 @@ void setup()
   Serial.begin(115200);
 }
 
-uint8_t sendbuf[6] = {0xFD, 0x04, 0x01, 0x00, 0x00, 0x04};
-//uint8_t sendbuf[6] = {0xFD, 0x04, 0x01, 0x01, 0x00, 0x00};
-
-uint8_t update_scan_code(uint8_t c)
-{
-  static int released = 0;
-  uint8_t zero = 0;
-
-  if(released)
-  {
-    released = 0;
-    blue.write(0xFD);
-    blue.write(0x09);
-    blue.write(0x01);
-    blue.write(zero);
-    blue.write(zero);
-    blue.write(zero);
-
-    blue.write(zero);
-    blue.write(zero);
-    blue.write(zero);
-    blue.write(zero);
-    blue.write(zero);
-    return 0xFF;
-  }
-
-  if(c == 0xF0)
-  {
-    released = 1;
-    return 0xFF;
-  }
-  else if(c == 0x1C)
-  {
-    blue.write(sendbuf, 6);
-    //blue.write(0x61);
-    return 0xFF;
-  }
-  else if(c == 0x1B)
-  {
-    blue.write(0xE1);
-    return 0xFF;
-  }
-  
-  return 0xFF;
-}
-
-void send_raw_data(uint8_t d)
-{
-  static int logcnt = 0;
-  Serial.print("[");
-  Serial.print(logcnt++);
-  Serial.print("]");
-  Serial.print(" Send:");
-  Serial.println(d, HEX);
-  blue.write(d);
-}
-
 void loop()
 {
   static int logcnt = 0;
   uint8_t c, d;
   if (PS2Keyboard_available()) {
     c = get_scan_code();
-    Serial.print("[");
-    Serial.print(logcnt++);
-    Serial.print("]");
-    Serial.print(" Raw:");
-    Serial.println(c, HEX);
-    
-    if((d = update_scan_code(c)) != 0xFF)
-      send_raw_data(d);
+
+#ifdef DBG
+    sprintf(logbuf, "[%d] get_scan_code : (%02X)\n", logcnt++, c);
+    Serial.print(logbuf);
+#endif
+
+    process_and_get_scancode(c);
   }
 }
