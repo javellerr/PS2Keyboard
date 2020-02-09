@@ -89,6 +89,11 @@ void process_and_get_scancode(uint8_t c)
     {
       send_raw_report(0x08, 0x00);
     }
+    else if (c == 0xF0)
+    {
+      flag_release = 1;
+      return;
+    }
     return;
   }
   else if (c == 0x1C)
