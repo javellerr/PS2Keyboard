@@ -1,6 +1,7 @@
 // http://www.quadibloc.com/comp/scan.htm
 // http://www.computer-engineering.org/ps2keyboard/scancodes2.html
 // http://www-ug.eecg.toronto.edu/msl/nios_devices/datasheets/PS2%20Protocol.htm
+// https://www.basic4mcu.com/bbs/board.php?bo_table=gesiyo12&wr_id=140&page=8https://www.basic4mcu.com/bbs/board.php?bo_table=gesiyo12&wr_id=140&page=8
 
 #include <Arduino.h> // for attachInterrupt, FALLING
 #include <SoftwareSerial.h>
@@ -71,50 +72,49 @@ bool PS2Keyboard_available() {
   return (tail != head);
 }
 
+uint8_t keyset[3][256] = {
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 00
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, // 10
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 20
+  0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 30
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 40
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 50
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 60
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 70
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 80
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 90
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // A0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // B0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // C0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // D0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // E0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F0
+};
+
 void process_and_get_scancode(uint8_t c)
 {
   static int8_t flag_release = 0;
   static int8_t flag_ext = 0;
 
-  if (flag_release)
-  {
-    flag_release = 0;
-    send_raw_report(0x00, 0x00);
-    return;
-  }
-  else if (flag_ext)
-  {
-    flag_ext = 0;
-    if (c == 0x1F)
-    {
-      send_raw_report(0x08, 0x00);
-    }
-    else if (c == 0xF0)
-    {
-      flag_release = 1;
-      return;
-    }
-    return;
-  }
-  else if (c == 0x1C)
-  {
-    send_raw_report(0x00, 0x04);
-    return;
-  }
-  else if (c == 0x5A)
-  {
-    send_raw_report(0x00, 0x28);
-    return;
-  }
-  else if (c == 0xE0)
+  if (c == 0xE0)
   {
     flag_ext = 1;
-    return;
   }
   else if (c == 0xF0)
   {
     flag_release = 1;
-    return;
+  }
+  else
+  {
+    if (flag_release)
+      send_raw_report(0x00, 0x00);
+    else if (flag_ext)
+      send_raw_report(0x00, keyset[c]);
+    else
+      send_raw_report(0x00, keyset[c]);
+
+    flag_ext = 0;
+    flag_release = 0;
   }
 }
 
