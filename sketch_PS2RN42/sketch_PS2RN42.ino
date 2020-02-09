@@ -72,7 +72,26 @@ bool PS2Keyboard_available() {
   return (tail != head);
 }
 
-uint8_t keyset[3][256] = {
+uint8_t keyset[256] = {
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 00
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, // 10
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 20
+  0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 30
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 40
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 50
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 60
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 70
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 80
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 90
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // A0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // B0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // C0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // D0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // E0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F0
+};
+
+uint8_t keyset_ext[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 00
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, // 10
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 20
@@ -109,7 +128,38 @@ void process_and_get_scancode(uint8_t c)
     if (flag_release)
       send_raw_report(0x00, 0x00);
     else if (flag_ext)
+      send_raw_report(0x00, keyset_ext[c]);
+    else
       send_raw_report(0x00, keyset[c]);
+
+    flag_ext = 0;
+    flag_release = 0;
+  }
+}
+
+void process_and_get_scancode2(uint8_t c)
+{
+  static int8_t flag_release = 0;
+  static int8_t flag_ext = 0;
+  uint8_t sbuf[8];
+  int8_t i = 0;
+
+  sbuf[i] = c;
+
+  if (c == 0xE0)
+  {
+    flag_ext = 1;
+  }
+  else if (c == 0xF0)
+  {
+    flag_release = 1;
+  }
+  else
+  {
+    if (flag_release)
+      send_raw_report(0x00, 0x00);
+    else if (flag_ext)
+      send_raw_report(0x00, keyset_ext[c]);
     else
       send_raw_report(0x00, keyset[c]);
 
