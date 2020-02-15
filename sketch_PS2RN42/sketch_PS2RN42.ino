@@ -72,100 +72,77 @@ bool PS2Keyboard_available() {
   return (tail != head);
 }
 
-uint8_t keyset[256] = {
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 00
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, // 10
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 20
-  0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 30
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 40
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 50
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 60
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 70
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 80
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 90
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // A0
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // B0
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // C0
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // D0
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // E0
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F0
+uint8_t keyset[1];
+uint8_t keymap[] = {
+  1, 0xF0, 0x14, 2, 0xF8, 0xF0, 0x14,
+  1, 0xF1, 0x12, 2, 0xF9, 0xF0, 0x12,
+  1, 0xF2, 0x11, 2, 0xFA, 0xF0, 0x11,
+  2, 0xF3, 0xE0, 0x1F, 3, 0xFB, 0xE0, 0xF0, 0x1F,
+  2, 0xF4, 0xE0, 0x14, 3, 0xFC, 0xE0, 0xF0, 0x14,
+  1, 0xF5, 0x59, 2, 0xFD, 0xF0, 0x59,
+  2, 0xF6, 0xE0, 0x11, 3, 0xFE, 0xE0, 0xF0, 0x11,
+  2, 0xF7, 0xE0, 0x27, 3, 0xFF, 0xE0, 0xF0, 0x27,
+
+  1, 0x04, 0x1C, 2, 0x00, 0xF0, 0x1C,
+  1, 0x06, 0x21, 2, 0x00, 0xF0, 0x21,
+
+  0,
 };
 
-uint8_t keyset_ext[256] = {
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 00
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, // 10
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 20
-  0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 30
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 40
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 50
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 60
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 70
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 80
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 90
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // A0
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // B0
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // C0
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // D0
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // E0
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F0
-};
+uint8_t update_valid_hcode(uint8_t *hbuf, uint8_t size)
+{
+  // 1. table 검색을 하여
+  uint8_t *list = keymap;
+
+  while(*list)
+  {
+    Serial.print("*");
+    if(*list == size && memcmp(list + 2, hbuf, size) == 0)
+    {
+      Serial.print("\n");
+      return *(list + 1);
+    }
+
+    list += *list + 2;
+  }
+
+  Serial.print("\n");
+  return 0x44;
+}
 
 void process_and_get_scancode(uint8_t c)
 {
-  static int8_t flag_release = 0;
-  static int8_t flag_ext = 0;
+  uint8_t hcode;
+  static uint8_t hbuf[8];
+  static uint8_t hidx = 0;
+  static uint8_t mod = 0;
+  uint8_t valid;
 
-  if (c == 0xE0)
-  {
-    flag_ext = 1;
-  }
-  else if (c == 0xF0)
-  {
-    flag_release = 1;
-  }
-  else
-  {
-    if (flag_release)
-      send_raw_report(0x00, 0x00);
-    else if (flag_ext)
-      send_raw_report(0x00, keyset_ext[c]);
-    else
-      send_raw_report(0x00, keyset[c]);
+  hbuf[hidx++] = c;
 
-    flag_ext = 0;
-    flag_release = 0;
-  }
-}
+  // 1. 키를 식별 한다.
+  hcode = update_valid_hcode(hbuf, hidx);
 
-void process_and_get_scancode2(uint8_t c)
-{
-  static int8_t flag_release = 0;
-  static int8_t flag_ext = 0;
-  uint8_t sbuf[8];
-  int8_t i = 0;
+  if (hcode == 0x44) return;
 
-  sbuf[i] = c;
-
-  if (c == 0xE0)
+  // 2. 메타 키이면, 메타 키 상태를 업데이트
+  if (hcode >= 0xF0 && hcode <= 0xFF)
   {
-    flag_ext = 1;
+    if(hcode < 0xF8)
+    {
+      mod |= 1 << (hcode & 0x0F);
+    }
+    else 
+    {
+      mod &= ~(1 << ((hcode & 0x0F) - 8));
+    }
+    hcode = 0;
   }
-  else if (c == 0xF0)
-  {
-    flag_release = 1;
-  }
-  else
-  {
-    if (flag_release)
-      send_raw_report(0x00, 0x00);
-    else if (flag_ext)
-      send_raw_report(0x00, keyset_ext[c]);
-    else
-      send_raw_report(0x00, keyset[c]);
 
-    flag_ext = 0;
-    flag_release = 0;
-  }
+  // 3. 식별한 키를 전송 한다.
+  send_raw_report(mod, hcode);
+
+  hidx = 0;
 }
 
 #ifdef DBG
@@ -205,7 +182,7 @@ void setup()
 }
 
 void loop()
-{
+{  
   static int logcnt = 0;
   uint8_t c, d;
   if (PS2Keyboard_available()) {
