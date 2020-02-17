@@ -94,10 +94,10 @@ uint8_t update_valid_hcode(uint8_t *hbuf, uint8_t size)
   // 1. table 검색을 하여
   uint8_t *list = keymap;
 
-  while(*list)
+  while (*list)
   {
     Serial.print("*");
-    if(*list == size && memcmp(list + 2, hbuf, size) == 0)
+    if (*list == size && memcmp(list + 2, hbuf, size) == 0)
     {
       Serial.print("\n");
       return *(list + 1);
@@ -128,11 +128,11 @@ void process_and_get_scancode(uint8_t c)
   // 2. 메타 키이면, 메타 키 상태를 업데이트
   if (hcode >= 0xF0 && hcode <= 0xFF)
   {
-    if(hcode < 0xF8)
+    if (hcode < 0xF8)
     {
       mod |= 1 << (hcode & 0x0F);
     }
-    else 
+    else
     {
       mod &= ~(1 << ((hcode & 0x0F) - 8));
     }
@@ -182,7 +182,7 @@ void setup()
 }
 
 void loop()
-{  
+{
   static int logcnt = 0;
   uint8_t c, d;
   if (PS2Keyboard_available()) {
