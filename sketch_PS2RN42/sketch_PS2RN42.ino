@@ -15,7 +15,6 @@
 
 static volatile uint8_t buffer[BUFFER_SIZE];
 static volatile uint8_t head = 0, tail = 0;
-SoftwareSerial blue(4, 5); // Rx,Tx
 
 void ps2interrupt(void)
 {
@@ -73,7 +72,7 @@ bool PS2Keyboard_available() {
 }
 
 uint8_t keymap[256] = {
-  // 0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F  
+  // 0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
   0x00, 0x42, 0x00, 0x3E, 0x3C, 0x3A, 0x3B, 0x45, 0x00, 0x43, 0x41, 0x3F, 0x3D, 0x2B, 0x35, 0x00, // 0x00 ~ 0x0F
   0x00, 0xF2, 0xF1, 0x00, 0xF0, 0x14, 0x1E, 0x00, 0x00, 0x00, 0x1D, 0x16, 0x04, 0x1A, 0x1F, 0x00, // 0x10 ~ 0x1F
   0x00, 0x06, 0x1B, 0x07, 0x08, 0x21, 0x20, 0x00, 0x00, 0x2C, 0x19, 0x09, 0x17, 0x15, 0x22, 0x00, // 0x20 ~ 0x2F
@@ -93,7 +92,7 @@ uint8_t keymap[256] = {
 };
 
 uint8_t keymap_ext0[256] = {
-  // 0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F  
+  // 0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x00 ~ 0x0F
   0x00, 0xF6, 0x00, 0x00, 0xF4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF3, // 0x10 ~ 0x1F
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x65, // 0x20 ~ 0x2F
@@ -114,9 +113,9 @@ uint8_t keymap_ext0[256] = {
 
 
 uint8_t keymap_ext1[256] = {
-  // 0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F  
+  // 0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x00 ~ 0x0F
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x10 ~ 0x1F
+  0x00, 0x00, 0x00, 0x00, 0x48, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x10 ~ 0x1F
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x20 ~ 0x2F
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x30 ~ 0x3F
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x40 ~ 0x4F
@@ -133,109 +132,91 @@ uint8_t keymap_ext1[256] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0xF0 ~ 0xFF
 };
 
-uint8_t cal_hid_code(uint8_t scode, uint8_t *hcode, uint8_t *keyst)
+void gen_hcode(uint8_t scode, uint8_t *hcode, uint8_t *keyst)
 {
-  static uint8_t hbuf[8] = {0, };
-  static uint8_t hidx = 0;
-  
   static uint8_t status_ext0 = 0;
   static uint8_t status_ext1 = 0;
   static uint8_t status_key = 0;
-  static uint8_t status_goon = 0;
 
-  if(scode == 0xE0 && status_goon != 1)
-  {
+  if (scode == 0xE0)
     status_ext0 = 1;
-  }
-  else if(scode == 0xE1 && status_goon != 1)
-  {
+  else if (scode == 0xE1)
     status_ext1 = 1;
-  }
-  else if(scode == 0xF0 && status_goon != 1)
-  {
+  else if (scode == 0xF0)
     status_key = 1;
-  }
   else
   {
-    if(status_ext0 == 1)
-    {
+    if (status_ext0)
       *hcode = keymap_ext0[scode];
-    }
-    else if(status_ext1 == 1)
-    {
-      hbuf[hidx++] = scode;
-
-      if(hbuf[0] == 0xE1
-        && hbuf[1] == 0x14
-        && hbuf[2] == 0x77
-        && hbuf[3] == 0xE1
-        && hbuf[4] == 0xF0
-        && hbuf[5] == 0x14
-        && hbuf[6] == 0xF0
-        && hbuf[7] == 0x77)
-      {
-        *hcode = 0x48;
-        hidx = 0;
-        memset(hbuf, 0x00, 8);
-      }
-      else
-      {
-        status_goon = 1;
-        
-        return 0;
-      }
-    }
+    else if (status_ext1)
+      *hcode = keymap_ext1[scode];
     else
-    {
       *hcode = keymap[scode];
-    }
-    
+
     *keyst = status_key;
 
     status_ext0 = 0;
     status_ext1 = 0;
     status_key = 0;
-    status_goon = 0;
-    
-    return 1;
   }
-
-  return 0;
 }
 
-void send_hid_code(uint8_t hid_code, uint8_t pressed)
-{
-  send_raw_report(0, 0);
-  
-  return;
-}
+SoftwareSerial blue(4, 5); // Rx,Tx
 
-#ifdef DBG
-static char logbuf[64];
-static int logcnt = 0;
-#endif
-
-void send_raw_report(uint8_t modifier, uint8_t scancode)
+void send_hid_code(uint8_t hcode, uint8_t keyst)
 {
-  static uint8_t sendbuf[6] =
+  static uint8_t sendbuf[12] =
   {
     0xFD, // start byte
-    0x04, // length
+    0x09, // length
     0x01, // descriptor
     0x00, // modifier
     0x00, // 0x00
-    0x00 // scan code 1
+    0x00, // scan code 0
+    0x00, // scan code 1
+    0x00, // scan code 2
+    0x00, // scan code 3
+    0x00, // scan code 4
+    0x00, // scan code 5
+    0x00, // padding
   };
+  uint8_t *cbuf = &sendbuf[5];
+  static int cidx = 0;
+  int i;
+
+  if (keyst == 0) // pressed
+  {
+    if (cidx < 6)
+    {
+      cbuf[cidx++] = hcode;
+      send_raw_report(sendbuf);
+    }
+  }
+  else // released
+  {
+    for (i = 0; i < cidx; i++)
+    {
+      if (cbuf[i] == hcode)
+      {
+        for (; i < cidx; i++)
+          cbuf[i] = cbuf[i + 1];
+        cidx--;
+        send_raw_report(sendbuf);
+      }
+    }
+  }
+}
+
+void send_raw_report(uint8_t *buf)
+{
+  blue.write(buf, 11);
 
 #ifdef DBG
-  sprintf(logbuf, "[%d] send_raw_report : (%02X)\n", logcnt++, scancode);
+  static char logbuf[128];
+  sprintf(logbuf, "> %02X %02X %02X %02X %02X | %02X %02X %02X %02X %02X %02X\n",
+          buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9], buf[10]);
   Serial.print(logbuf);
 #endif
-
-  sendbuf[3] = modifier;
-  sendbuf[5] = scancode;
-
-  blue.write(sendbuf, sizeof(sendbuf));
 }
 
 void setup()
@@ -245,30 +226,36 @@ void setup()
   blue.begin(115200);
   Serial.begin(115200);
 
-  Serial.print("start");
+  Serial.print("start ps22hid\n");
 }
 
 void loop()
 {
-  static int logcnt = 0;
-  uint8_t c, d;
-  uint8_t hid_code;
-  uint8_t key_status;
-  int8_t ret;
-  
+  uint8_t scode = 0;
+  uint8_t hcode = 0;
+  uint8_t keyst = 0;
+  static uint8_t hcode_prev = 0;
+  static uint8_t keyst_prev = 0;
+
   if (PS2Keyboard_available()) {
-    c = get_scan_code();
+    scode = get_scan_code();
 
 #ifdef DBG
-    sprintf(logbuf, "[%d] get_scan_code : (%02X)\n", logcnt++, c);
+    static int logcnt = 0;
+    static char logbuf[128];
+    sprintf(logbuf, "[%d] scode : %02X\n", logcnt++, scode);
     Serial.print(logbuf);
 #endif
 
-    cal_hid_code(c, &hid_code, &key_status);
+    gen_hcode(scode, &hcode, &keyst);
 
-    if(hid_code != 0x00)
+    if (hcode &&
+        (hcode != hcode_prev || keyst != keyst_prev))
     {
-      send_hid_code(hid_code, key_status);
+      send_hid_code(hcode, keyst);
+
+      hcode_prev = hcode;
+      keyst_prev = keyst;
     }
   }
 }
