@@ -180,28 +180,45 @@ void send_hid_code(uint8_t hcode, uint8_t keyst)
     0x00, // scan code 5
     0x00, // padding
   };
-  uint8_t *cbuf = &sendbuf[5];
+  static uint8_t *cbuf = &sendbuf[5];
+  static uint8_t *mod = &sendbuf[3];
   static int cidx = 0;
   int i;
 
   if (keyst == 0) // pressed
   {
-    if (cidx < 6)
+    if ((hcode & 0xF0) == 0xF0) // modifier
     {
-      cbuf[cidx++] = hcode;
+      mod[0] |= 1 << (hcode & 0x0F);
       send_raw_report(sendbuf);
+    }
+    else
+    {
+      if (cidx < 6)
+      {
+        cbuf[cidx++] = hcode;
+        send_raw_report(sendbuf);
+      }
     }
   }
   else // released
   {
-    for (i = 0; i < cidx; i++)
+    if ((hcode & 0xF0) == 0xF0) // modifier
     {
-      if (cbuf[i] == hcode)
+      mod[0] &= ~(1 << (hcode & 0x0F));
+      send_raw_report(sendbuf);
+    }
+    else
+    {
+      for (i = 0; i < cidx; i++)
       {
-        for (; i < cidx; i++)
-          cbuf[i] = cbuf[i + 1];
-        cidx--;
-        send_raw_report(sendbuf);
+        if (cbuf[i] == hcode)
+        {
+          for (; i < cidx; i++)
+            cbuf[i] = cbuf[i + 1];
+          cidx--;
+          send_raw_report(sendbuf);
+        }
       }
     }
   }
