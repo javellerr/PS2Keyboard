@@ -11,7 +11,7 @@
 #define KEYBOARD_IRQ_NUM 0
 #define BUFFER_SIZE 45
 
-#define DBG
+//#define DBG
 
 static volatile uint8_t buffer[BUFFER_SIZE];
 static volatile uint8_t head = 0, tail = 0;
@@ -194,11 +194,19 @@ void send_hid_code(uint8_t hcode, uint8_t keyst)
     }
     else
     {
-      if (cidx < 6)
+      if (cidx > 5)
       {
-        cbuf[cidx++] = hcode;
-        send_raw_report(sendbuf);
+        return;
       }
+      for (i = 0; i < cidx; i++)
+      {
+        if (cbuf[i] == hcode)
+        {
+          return;
+        }
+      }
+      cbuf[cidx++] = hcode;
+      send_raw_report(sendbuf);
     }
   }
   else // released
